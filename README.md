@@ -1,36 +1,49 @@
+
 ````md
-## CNN-ASPP Wildfire Spread Prediction
+**## CNN-ASPP Wildfire Spread Prediction
+**
+End-to-end deep learning pipeline for **next-day wildfire spread segmentation** using a  
+**Convolutional Neural Network with Atrous Spatial Pyramid Pooling (ASPP)**.
 
-End-to-end deep learning pipeline for **next-day wildfire spread segmentation** using a **CNN with Atrous Spatial Pyramid Pooling (ASPP)**.  
-The project emphasizes **reproducibility, clean ML engineering, and interpretability**, and is designed to mirror real-world NDWS-style workflows.
-
----
-
-## 🔥 Problem Motivation
-
-Predicting the spatial spread of wildfires is critical for early response and resource allocation.  
-This project formulates next-day wildfire spread prediction as a **semantic segmentation task** over multi-channel geospatial tiles, following the structure of the **Next-Day Wildfire Spread (NDWS)** dataset.
+The project emphasizes **reproducibility**, **clean ML engineering**, and **interpretability**, and is designed to mirror real-world **NDWS-style workflows**.
 
 ---
 
-## 🧠 Method Overview
+**## 🔥 Problem Motivation
+**
+Accurate prediction of wildfire spread is critical for **early response**, **evacuation planning**, and **resource allocation**.
 
+This project formulates next-day wildfire spread prediction as a  
+**semantic segmentation task** over multi-channel geospatial tiles, following the structure of the  
+**Next-Day Wildfire Spread (NDWS)** dataset.
+
+---
+
+**## 🧠 Method Overview
+**
 - **Architecture:** CNN + Atrous Spatial Pyramid Pooling (ASPP)
-- **Task:** Binary segmentation (spread vs. no-spread)
-- **Training:** PyTorch Lightning + Hydra configs
-- **Evaluation:** Threshold sweep, PR metrics, IoU, F1
-- **Explainability:** Grad-CAM visualization on ASPP branches
-- **Reproducibility:** Deterministic runs + snapshot export
+- **Task:** Binary segmentation *(spread vs. no-spread)*
+- **Training:** PyTorch Lightning with Hydra-based configuration
+- **Evaluation:** Threshold sweep, Precision–Recall metrics, IoU, F1
+- **Explainability:** Grad-CAM visualization on ASPP feature maps
+- **Reproducibility:** Deterministic runs with snapshot-based experiment export
 
 ---
 
 ## ⚙️ Environment Setup
 
+Create and activate a dedicated Conda environment:
+
 ```bash
 conda create -n wildfire python=3.10 -y
 conda activate wildfire
-pip install -e ".[dev]"
 ````
+
+Install the project in editable mode with development dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
 
 Verify installation:
 
