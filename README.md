@@ -1,5 +1,3 @@
-
-md
 ## CNN-ASPP Wildfire Spread Prediction
 
 End-to-end deep learning pipeline for **next-day wildfire spread segmentation** using a  
