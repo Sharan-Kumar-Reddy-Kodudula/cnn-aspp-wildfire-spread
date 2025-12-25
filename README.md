@@ -1,5 +1,5 @@
 ````md
-# CNN-ASPP Wildfire Spread Prediction
+## CNN-ASPP Wildfire Spread Prediction
 
 End-to-end deep learning pipeline for **next-day wildfire spread segmentation** using a **CNN with Atrous Spatial Pyramid Pooling (ASPP)**.  
 The project emphasizes **reproducibility, clean ML engineering, and interpretability**, and is designed to mirror real-world NDWS-style workflows.
