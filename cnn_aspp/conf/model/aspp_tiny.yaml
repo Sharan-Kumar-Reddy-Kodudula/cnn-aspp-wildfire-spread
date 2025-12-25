@@ -1,0 +1,5 @@
+# cnn_aspp/conf/model/aspp_tiny.yaml
+in_channels: 12
+dropout: 0.1        # Phase 6: fuse-block dropout (0.0 to disable)
+focal_gamma: 2.0    # Phase 6: Focal loss γ
+focal_alpha: null   # or 0.25, etc., if you want class-balancing

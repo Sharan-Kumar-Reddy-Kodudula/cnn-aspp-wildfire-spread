@@ -1,0 +1,3 @@
+max_steps: 20
+batch_size: 4
+devices: 1

@@ -1,0 +1,20 @@
+{
+  "train": {
+    "files": 14979,
+    "fire_pixels": 658270,
+    "total_pixels": 61353984,
+    "fire_frac": 0.010729050618782963
+  },
+  "val": {
+    "files": 1877,
+    "fire_pixels": 102594,
+    "total_pixels": 7688192,
+    "fire_frac": 0.013344359766249335
+  },
+  "test": {
+    "files": 1689,
+    "fire_pixels": 84331,
+    "total_pixels": 6918144,
+    "fire_frac": 0.012189830104721728
+  }
+}

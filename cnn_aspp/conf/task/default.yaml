@@ -1,0 +1,4 @@
+task:
+  name: "train"
+  max_epochs: 1
+  seed: 42

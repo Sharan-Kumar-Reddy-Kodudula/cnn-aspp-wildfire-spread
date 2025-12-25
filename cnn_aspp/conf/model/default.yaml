@@ -1,0 +1,4 @@
+model:
+  name: "aspp_cnn_skeleton"
+  in_channels: 3
+  num_classes: 2

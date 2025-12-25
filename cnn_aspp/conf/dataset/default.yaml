@@ -1,0 +1,4 @@
+dataset:
+  name: "placeholder"
+  root: "./data"
+  batch_size: 2

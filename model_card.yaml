@@ -1,0 +1,206 @@
+model_name: "Wildfire CNN-ASPP (Tiny)"
+version: "0.1.0"
+date: "2025-11-26"
+
+task:
+  type: "binary_segmentation"
+  name: "Next-day wildfire spread prediction"
+  description: >
+    Predict a binary mask of next-day fire spread at 1 km resolution, given
+    a stack of remote-sensing and meteorological features for day t.
+
+data:
+  dataset_name: "NDWS (Next-Day Wildfire Spread)"
+  citation: "Next Day Wildfire Spread (NDWS) dataset, CONUS 1 km grid (Kaggle / associated paper)."
+  geography: "CONUS (continental United States)"
+  spatial_resolution: "1 km"
+  temporal_granularity: "daily"
+  input_channels:
+    count: 12
+    description: >
+      12-channel stack including meteorology, fuel, topography, and fire history
+      (see cnn_aspp/data/channels.json and conf/dataset/ndws.yaml).
+  target:
+    type: "binary_mask"
+    description: "Next-day burned / not-burned pixels."
+  splits:
+    description: >
+      NDWS tiles under cnn_aspp/data/ndws_out, using the EVTUNK subset:
+      - train: train/EVTUNK
+      - val:   val/EVTUNK
+      - test:  test/EVTUNK
+    micro_split:
+      description: "8/4 micro-split for fast sanity runs."
+      train_dir: "data/micro/train"
+      val_dir: "data/micro/val"
+  preprocessing:
+    - "Per-channel z-score normalization using mean/std from cnn_aspp/data/stats.json (train split)."
+    - "Random horizontal flips (and optional rotations) for data augmentation on the training set."
+    - "Tiles are 64x64 patches extracted from the NDWS grid."
+
+architecture:
+  family: "CNN-ASPP"
+  summary: >
+    A small fully-convolutional network with a two-layer stem followed by an
+    ASPP-style module (dilations {1,3,6,12}) and a shallow fusion head that
+    outputs per-pixel logits.
+  input_shape: "[B, 12, 64, 64]"
+  output_shape: "[B, 1, 64, 64]"
+  details:
+    stem:
+      - "Conv2d(12 -> 64, kernel=3, padding=1) + BatchNorm2d + ReLU"
+      - "Conv2d(64 -> 128, kernel=3, padding=1) + BatchNorm2d + ReLU"
+    aspp_branches:
+      channels_per_branch: 32
+      dilations: [1, 3, 6, 12]
+      description: >
+        Four parallel 3x3 convolutions with different dilation rates, each
+        producing 32 channels. Outputs are concatenated (128 channels) then fused.
+    fusion_head:
+      - "Conv2d(128 -> 32, kernel=3, padding=1) + BatchNorm2d + ReLU"
+      - "Conv2d(32 -> 32, kernel=3, padding=1) + BatchNorm2d + ReLU"
+      - "Conv2d(32 -> 1, kernel=1)"
+      - "Sigmoid at inference to obtain probabilities."
+  baselines:
+    - name: "Plain Tiny CNN"
+      description: >
+        Same stem and fusion head as above but without the ASPP branches
+        (no dilated convolutions). Used as a simpler reference model.
+
+training:
+  framework: "PyTorch + PyTorch Lightning"
+  configs:
+    model_config: "cnn_aspp/conf/model/aspp_tiny.yaml"
+    dataset_config: "cnn_aspp/conf/dataset/ndws.yaml"
+    train_config: "cnn_aspp/conf/train.yaml"
+  optimization:
+    optimizer: "Adam"
+    learning_rate: 4.0e-4
+    batch_size: 8
+    epochs: 20
+    lr_schedule: "Cosine schedule with eta_min=1e-6 (plus optional step LR parameters; see configs)."
+  losses:
+    primary: "Tversky"
+    tversky_alpha: 0.7
+    tversky_beta: 0.3
+    alternates:
+      - "Binary Cross-Entropy (BCE) as an ablation loss."
+      - "Focal loss (γ=2.0) for class-imbalance ablation."
+  regularization:
+    - "Data augmentation (random flips; optional rotations) on training tiles."
+    - "Dropout in the fusion head."
+    - "Weight decay in the optimizer."
+  hardware:
+    train_device: "Single GPU if available (MPS on Mac used in this run), otherwise CPU."
+    notes:
+      - "Unit tests and micro-dataset runs can be done on CPU."
+  seed: 1337
+  commands:
+    micro_sanity_run: >
+      python -m cnn_aspp.cli.train
+        dataset.split=micro
+        task.threshold=0.05
+    full_ndws_run: >
+      python -m cnn_aspp.cli.train
+        dataset.split=ndws
+        dataset.root=./cnn_aspp/data/ndws_out
+        task.threshold=0.05
+        task.epochs=20
+    plain_cnn_baseline: >
+      python -m cnn_aspp.tasks.train_plain_cnn
+        --root ./cnn_aspp/data/ndws_out
+        --in_ch 12
+
+metrics:
+  primary:
+    name: "F1 score (Dice)"
+    split: "validation (EVTUNK subset)"
+    threshold: 0.05
+    value: 0.263  # from threshold_sweep: F1 ≈ 0.263
+  secondary:
+    - name: "Precision"
+      threshold: 0.05
+      value: 0.353
+    - name: "Recall"
+      threshold: 0.05
+      value: 0.210
+  notes:
+    - >
+      Metrics are computed on a held-out validation subset (EVTUNK) using a
+      fixed probability threshold chosen from an F1 sweep over [0.0, 1.0].
+    - >
+      Additional metrics (e.g., overall accuracy, stratified metrics by fire size
+      or region) can be derived from eval.csv produced by the Phase 7 scripts.
+
+explainability:
+  methods:
+    - "Grad-CAM on ASPP branch outputs and the final conv layer."
+  experiments:
+    per_dilation_r2:
+      description: >
+        For a subset of validation tiles, Grad-CAM maps are computed for each
+        ASPP branch (dilations 1, 3, 6, 12) and for the final conv layer, then
+        R² is computed between branch and final Grad-CAM activations.
+      purpose: >
+        To quantify how much each dilation branch aligns with the final decision
+        map and to probe the relative role of different receptive-field sizes.
+
+intended_use:
+  primary:
+    - "Research on wildfire spread modeling and next-day risk maps."
+    - "Methodological comparisons between CNN-ASPP and simpler baselines."
+  appropriate_use:
+    - "Exploratory spatial analysis when combined with expert judgment."
+    - "As one component in a larger decision-support workflow."
+  out_of_scope_uses:
+    - "Fully automated evacuation, suppression, or resource-allocation decisions."
+    - "Standalone operational forecasting without expert oversight."
+
+limitations:
+  data:
+    - "Trained only on NDWS coverage; generalization to other regions is unknown."
+    - "Model inherits any biases and errors present in NDWS labels and inputs."
+  modeling:
+    - "Binary next-day spread; does not model fire intensity, smoke, or multi-day dynamics."
+    - "Performance degrades on rare/extreme fire events and underrepresented regions."
+  technical:
+    - "Full NDWS training is most practical on a GPU; CPU-only is suitable mainly for micro-runs and tests."
+
+ethical_considerations:
+  - >
+    Mis-calibrated or misinterpreted predictions could under- or overestimate
+    fire risk, impacting communities and ecosystems. Outputs should not be
+    used without expert review.
+  - >
+    Uneven data coverage and historical suppression biases may lead to better
+    performance in some regions and worse in others, potentially reinforcing
+    existing inequities in resource allocation.
+  - >
+    Users are responsible for complying with local regulations and for
+    communicating prediction uncertainty to stakeholders.
+
+reproducibility:
+  code_repo: "Local repo (cnn_aspp); can be pushed to a public Git host if needed."
+  entry_points:
+    - "python -m cnn_aspp                 # smoke test"
+    - "pytest -q                          # unit tests"
+    - >
+      python -m cnn_aspp.cli.train
+        dataset.split=ndws
+        dataset.root=./cnn_aspp/data/ndws_out
+        task.threshold=0.05
+        task.epochs=20
+    - >
+      python -m cnn_aspp.cli.sweep_thresh
+        dataset.root=./cnn_aspp/data/ndws_out
+    - "python -m cnn_aspp.cli.eval_phase7"
+    - >
+      python -m cnn_aspp.cli.snapshot_run
+        --version_dir tb/version_0
+        --out_dir runs/aspp_tiny_full_ndws_v2
+  environment:
+    python: "3.11"
+    dependencies: >
+      See environment-wildfire.yml and pyproject.toml for full dependency list.
+  random_seeds:
+    - 1337

@@ -1,0 +1,35 @@
+# cnn_aspp/conf/task/train.yaml
+#
+# This is loaded as cfg.task in cnn_aspp/cli/train.py
+# via defaults in conf/train.yaml (e.g. - task: train).
+
+# Phase 9: fixed seed for generic train.py
+seed: 1337
+
+# Data loader config for NDWSDataModule adapter
+batch_size: 8
+num_workers: 2
+
+# Training loop
+epochs: 2
+amp: true          # enable mixed precision if CUDA is available
+
+# Segmentation / loss configuration
+threshold: 0.05
+
+tversky:
+  alpha: 0.7
+  beta: 0.3
+
+optim:
+  name: adam
+  lr: 4e-4
+  weight_decay: 0.0
+
+scheduler:
+  # Your Trainer wrapper uses these to build the LR scheduler
+  kind: cosine
+  t_max: ${task.epochs}
+  eta_min: 1e-6
+  step_size: 30
+  gamma: 0.1

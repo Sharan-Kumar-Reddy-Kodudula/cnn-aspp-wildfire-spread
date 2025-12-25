@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cnn_aspp"
+version = "0.0.1"
+description = "ASPP-enabled CNN for wildfire spread (skeleton)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Sharan Kumar Reddy Kodudula" }]
+dependencies = [
+  "torch==2.1.2",
+  "torchvision==0.16.2",
+  "torchaudio==2.1.2",
+  "lightning==2.5.5",
+  "hydra-core",
+  "numpy==1.26.4",
+  "pandas",
+  "rasterio",
+  "opencv-python-headless==4.8.1.78",
+  "einops",
+  "pyyaml",
+  "matplotlib==3.8.0",
+  "scipy==1.11.4",
+  "contourpy==1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff",
+  "black",
+]
+
+[project.scripts]
+cnn-aspp = "cnn_aspp.cli.main:main"  # optional but handy
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cnn_aspp*"]
+
+[tool.setuptools.package-data]
+cnn_aspp = ["conf/**/*.yaml"]

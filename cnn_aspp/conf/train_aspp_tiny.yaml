@@ -1,0 +1,51 @@
+# cnn_aspp/conf/train_aspp_tiny.yaml
+
+train:
+  # Phase 9: fixed seed for reproducibility
+  seed: 1337
+
+  # Training loop
+  epochs: 20            # you can temporarily set 2 while debugging, then put back 20
+  batch_size: 8         # ↓ smaller to avoid OOM on MPS/CPU
+  num_workers: 4
+
+  # Precision / stability / logging
+  precision: 32
+  grad_clip: 1.0
+  log_every_n_steps: 50
+  accum: 1
+
+  # Loss and threshold
+  criterion: tversky    # tversky | bce | focal
+  threshold: 0.2
+
+  # Device config – FORCE CPU to avoid MPS OOM
+  devices: 1
+  accelerator: cpu      # <--- was "auto", now pinned to CPU
+
+optim:
+  lr: 3e-4
+  weight_decay: 1e-4
+  betas: [0.9, 0.999]
+  scheduler: cosine
+  warmup_steps: 500
+
+model:
+  _target_: cnn_aspp.models.aspp_tiny.ASPPTiny
+  in_channels: 12
+  dropout: 0.1
+  focal_gamma: 2.0
+  focal_alpha: null
+
+dataset:
+  train:
+    _target_: cnn_aspp.data.ndws_dataset.NDWSTilesDataset
+    root: ${oc.env:NDWS_ROOT}/train
+    stats_path: cnn_aspp/data/stats.json
+    augment: true
+
+  val:
+    _target_: cnn_aspp.data.ndws_dataset.NDWSTilesDataset
+    root: ${oc.env:NDWS_ROOT}/val
+    stats_path: cnn_aspp/data/stats.json
+    augment: false

@@ -1,0 +1,8 @@
+# Auto-generated micro dataset
+name: micro
+format: auto  # npz or pt
+root: /Users/sharan/Desktop/wildfire/data/micro
+train_glob: train/*.npz|train/*.pt
+val_glob: val/*.npz|val/*.pt
+num_workers: 0
+batch_size: 4

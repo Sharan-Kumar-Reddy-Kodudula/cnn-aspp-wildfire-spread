@@ -1,0 +1,3 @@
+in_channels: 12
+filters: 32
+dilations: [1, 3, 6, 12]

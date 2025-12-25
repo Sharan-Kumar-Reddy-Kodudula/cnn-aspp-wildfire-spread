@@ -1,0 +1,15 @@
+# cnn_aspp/conf/train.yaml
+defaults:
+  - model: cnn_aspp
+  - task: train
+  - dataset: ndws
+  - _self_
+
+logging:
+  tb_dir: ./tb
+  csv_dir: ./lightning_logs
+  version: null
+  log_every_n_steps: 25
+
+trainer:
+  fast_dev_run: false

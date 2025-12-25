@@ -1,0 +1,44 @@
+# cnn_aspp/conf/dataset/micro.yaml
+# Tiny 8/4 micro dataset used for fast debugging / tests
+
+# Root still points to ndws_out for compatibility, but we override with train_dir/val_dir.
+root: ${oc.env:NDWS_ROOT, "./cnn_aspp/data/ndws_out"}
+split: "micro"
+
+# Micro split: uses the tiny committed micro tiles in ./data/micro
+train_dir: ./data/micro/train
+val_dir:   ./data/micro/val
+test_dir:  null
+
+normalize: true
+
+augment:
+  flip: true
+  rotate: false
+
+channels: null
+
+stats_path: ${oc.env:NDWS_STATS, "./cnn_aspp/data/stats.json"}
+
+tile_size: 64
+dtype: float32
+target_dtype: int64
+
+channel_names:
+  - elevation
+  - NDVI
+  - erc
+  - pdsi
+  - population
+  - pr
+  - sph
+  - th
+  - tmmn
+  - tmmx
+  - vs
+  - PrevFireMask
+
+normalization:
+  strategy: per_channel_zscore
+  eps: 1.0e-6
+  clamp: null

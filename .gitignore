@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# OS
+.DS_Store
+
+# Packaging
+*.egg-info/
+dist/
+build/
+
+# Logs / experiment artifacts
+lightning_logs/
+tb/
+runs/
+outputs/
+*.ckpt
+*.pth
+*.pt
+events.out.tfevents.*
+
+# Large datasets
+ndws_out/
+
+# Editors
+.vscode/
+.idea/

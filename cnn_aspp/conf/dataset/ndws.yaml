@@ -1,0 +1,51 @@
+# cnn_aspp/conf/dataset/ndws.yaml
+# Full NDWS dataset config
+
+# Root directory for full NDWS tiles.
+# You can override this at runtime with the NDWS_ROOT env var.
+root: ${oc.env:NDWS_ROOT, "./cnn_aspp/data/ndws_out"}
+
+# Just a label; used if your builder keys off this. Not "micro" anymore.
+split: "full"
+
+# Real NDWS split directories (preferred over root/split by the builder)
+# If your .npz tiles are directly in train/val/test, drop the EVTUNK.
+train_dir: ${root}/train/EVTUNK
+val_dir:   ${root}/val/EVTUNK
+test_dir:  ${root}/test/EVTUNK  # set to null if you don’t have / don’t use test
+
+# Common options
+normalize: true
+
+augment:
+  flip: true
+  rotate: false
+
+# If null, channels will be inferred from data / channels_file
+channels: null
+
+# Where to read per-channel stats from (or override with NDWS_STATS)
+stats_path: ${oc.env:NDWS_STATS, "./cnn_aspp/data/stats.json"}
+
+tile_size: 64
+dtype: float32
+target_dtype: int64
+
+channel_names:
+  - elevation
+  - NDVI
+  - erc
+  - pdsi
+  - population
+  - pr
+  - sph
+  - th
+  - tmmn
+  - tmmx
+  - vs
+  - PrevFireMask
+
+normalization:
+  strategy: per_channel_zscore
+  eps: 1.0e-6
+  clamp: null

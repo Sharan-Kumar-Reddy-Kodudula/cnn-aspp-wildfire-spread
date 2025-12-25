@@ -1,0 +1,31 @@
+name: wildfire
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  # numerics / plotting
+  - numpy=1.26
+  - scipy=1.11
+  - pandas
+  - matplotlib=3.8
+  - pyyaml
+  - einops
+  # geospatial
+  - rasterio
+  # training utils
+  - lightning=2.5.5
+  - hydra-core
+  # dev tools
+  - pytest>=8
+  - black
+  - ruff
+  - pip:
+      # PyTorch stack via pip (works great on macOS arm64)
+      - torch==2.1.2
+      - torchvision==0.16.2
+      - torchaudio==2.1.2
+      - opencv-python-headless==4.8.1.78
+      - contourpy==1.1.1
+      # TFRecord reader that doesn't require TensorFlow
+      - tfrecord
